@@ -1,0 +1,94 @@
+from news.models import *
+
+user1 = User.objects.create_user('Иван Иванов')
+user2 = User.objects.create_user('Петр Петров')
+user3 = User.objects.create_user('Комментатор')
+
+author1 = Author.objects.create(user=user1)
+author2 = Author.objects.create(user=user2)
+
+category1 = Category(topic='Спорт')
+category1.save()
+category2 = Category(topic='Наука')
+category2.save()
+category3 = Category.objects.create(topic='Образование')
+category4 = Category.objects.create(topic='Музыка')
+
+article1_title = "Заголовок 1 статьи"
+article1_text = "Текст 1 статьи - начало "
+for n in range(124): #Текст более 124 символов
+  article1_text += 'а'
+
+article1_text += " Текст 1 статьи - конец"
+article1 = Post.objects.create(author=author1, type=Post.article, title=article1_title, text=article1_text)
+
+article2_title = "Заголовок 2 статьи"
+article2_text = "Текст 2 статьи - начало "
+for n in range(1): #Текст менее 124 символов
+  article2_text += 'а'
+
+article2_text += " Текст 2 статьи - конец"
+article2 = Post.objects.create(author=author2, type=Post.article, title=article2_title, text=article2_text)
+
+news1_title = "Заголовок 1 новости"
+news1_text = "Текст 1 новости - начало "
+for n in range(10): #Текст менее 124 символов
+  news1_text += 'а'
+
+news1_text += " Текст 1 новости - конец"
+news1 = Post.objects.create(author=author1, type=Post.news, title=news1_title, text=news1_text)
+
+PostCategory.objects.create(post=article1, category=category1)
+PostCategory.objects.create(post=article1, category=category3)
+PostCategory.objects.create(post=article2, category=category2)
+PostCategory.objects.create(post=news1, category=category4)
+
+comment1_text = "Хорошая статья"
+comment1 = Comment.objects.create(user=user2, post=article1, text=comment1_text)
+comment1.like()
+article1.like()
+
+comment2_text = "Нормальная статья"
+comment2 = Comment.objects.create(user=user3, post=article1, text=comment2_text)
+comment2.dislike()
+article1.like()
+
+comment3_text = "Статья ни о чем :D"
+comment3 = Comment.objects.create(user=user1, post=article2, text=comment3_text)
+comment3.like()
+article2.dislike()
+
+comment4_text = "Я бы лучше написал!"
+comment4 = Comment.objects.create(user=user2, post=news1, text=comment4_text)
+comment4.dislike()
+news1.dislike()
+
+comment5_text = "Нормальная новость"
+comment5 = Comment.objects.create(user=user3, post=news1, text=comment5_text)
+comment5.like()
+news1.like()
+
+author1.update_rating()
+author2.update_rating()
+
+Author.objects.all().order_by('-rating')[0].user.username
+
+p = Post.objects.all().order_by('-rating')[0]
+print(f" \n \
+  date:    {p.datetime_in.date().isoformat()} \n \
+  user:    {p.author.user.username} \n \
+  rating:  {p.rating} \n \
+  title:   {p.title} \n \
+  preview: {p.preview()} \n \
+")
+
+comments = Comment.objects.filter(post = p)
+for c in comments:
+  print(f" \n \
+  comment {c.id}: \n \
+  date:    {c.datetime_in.date().isoformat()} \n \
+  user:    {c.user.username} \n \
+  rating:  {c.rating} \n \
+  text:    {c.text} \n \
+  ")
+
